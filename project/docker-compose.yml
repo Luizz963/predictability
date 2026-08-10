@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: bacteria-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bacteria_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  minio-storage:
+    image: minio/minio
+    container_name: bacteria-minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: piroca06%
+    ports:
+      - "9000:9000" # Porta da API (consumida pelo Java)
+      - "9001:9001" # Porta do Console (interface web)
+    volumes:
+      - minio_data:/data
+
+  minio-create-bucket:
+    image: minio/mc
+    container_name: bacteria-minio-setup
+    depends_on:
+      - minio-storage
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc config host add myminio http://minio-storage:9000 minioadmin minioadmin;
+      /usr/bin/mc mb myminio/genomes --ignore-existing;
+      /usr/bin/mc anonymous set private myminio/genomes;
+      exit 0;
+      "
+
+volumes:
+  mysql_data:
+  minio_data:

@@ -1,0 +1,5 @@
+CREATE TABLE tb_laboratories (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tax_id VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
