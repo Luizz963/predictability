@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -92,5 +94,19 @@ public class GenomaController {
                 .filter(report -> report.getLaboratory().getId().equals(laboratory.getId()))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/surveillance")
+    public ResponseEntity<Page<Report>> getOutbreakAlerts(
+            @AuthenticationPrincipal Laboratory laboratory,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(defaultValue = "0.90") Double minProbability,
+            @PageableDefault(size = 20, sort = "processingDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<Report> outbreakReports = reportRepository.findOutbreakPatterns(
+                laboratory, startDate, endDate, minProbability, pageable);
+
+        return ResponseEntity.ok(outbreakReports);
     }
 }

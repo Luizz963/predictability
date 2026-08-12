@@ -6,7 +6,6 @@ import com.bacteria_resistant.project.model.enums.ReportStatus;
 import com.bacteria_resistant.project.repository.ReportRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AsyncAnalysisService {
@@ -20,11 +19,10 @@ public class AsyncAnalysisService {
     }
 
     @Async("analysisExecutor")
-    @Transactional
     public void processGenomeFile(Long reportId, String fileKey, String filename) {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("Report not found"));
-
+        
         report.setStatus(ReportStatus.PROCESSING);
         reportRepository.saveAndFlush(report);
 
@@ -37,6 +35,7 @@ public class AsyncAnalysisService {
             report.setStatus(ReportStatus.COMPLETED);
 
         } catch (Exception e) {
+            System.err.println("Erro na integração com IA (Python) para o arquivo " + fileKey + ": " + e.getMessage());
             report.setStatus(ReportStatus.FAILED);
         }
 

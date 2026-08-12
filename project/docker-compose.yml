@@ -6,8 +6,10 @@ services:
     container_name: bacteria-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: KwnXh8JoSmle?HFv  # Preencha uma senha forte para o administrador
       MYSQL_DATABASE: bacteria_db
+      MYSQL_USER: agario                  # O mesmo configurado no application.properties
+      MYSQL_PASSWORD: gwM?iQp0SCbh     # A mesma configurada no application.properties
     ports:
       - "3308:3306"
     volumes:
@@ -35,7 +37,7 @@ services:
     entrypoint: >
       /bin/sh -c "
       sleep 5;
-      /usr/bin/mc config host add myminio http://minio-storage:9000 minioadmin minioadmin;
+      /usr/bin/mc config host add myminio http://minio-storage:9000 minioadmin piroca06%;
       /usr/bin/mc mb myminio/genomes --ignore-existing;
       /usr/bin/mc anonymous set private myminio/genomes;
       exit 0;
