@@ -30,6 +30,15 @@ public class Report {
     @Column(nullable = false, unique = true)
     private String fileKey;
 
+    @Column(name = "hospital_name")
+    private String hospitalName;
+
+    @Column(name = "hospital_unit")
+    private String hospitalUnit;
+
+    @Column(name = "detected_gene")
+    private String detectedGene;
+
     public Report() {
     }
 

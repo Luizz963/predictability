@@ -39,20 +39,19 @@ public class GenomaController {
 
     @PostMapping("/analyze")
     public ResponseEntity<Report> analyzeGenome(
+            @AuthenticationPrincipal Laboratory laboratory,
             @RequestParam("file") MultipartFile file,
-            @AuthenticationPrincipal Laboratory laboratory) {
+            @RequestParam("hospitalName") String hospitalName,
+            @RequestParam("hospitalUnit") String hospitalUnit)
+    {
 
         String filename = file.getOriginalFilename();
 
         if (filename == null || (!filename.endsWith(".fna") && !filename.endsWith(".fasta"))) {
             throw new InvalidFileException("Unsupported format. Please upload only .fna or .fasta files.");
         }
-
         try {
-            // Gera um ID único para evitar sobreposição de arquivos com o mesmo nome
             String fileKey = UUID.randomUUID().toString() + "_" + filename;
-
-            // Stream direto do MultipartFile (armazenado em disco temporário pelo Tomcat) para o S3
             storageService.uploadFile(
                     fileKey,
                     file.getInputStream(),
@@ -60,12 +59,14 @@ public class GenomaController {
                     file.getContentType()
             );
 
-            // Persiste o estado inicial com a chave do S3
+
             Report pendingReport = new Report(filename, fileKey, laboratory);
             Report savedReport = reportRepository.save(pendingReport);
 
-            // Despacha a thread assíncrona passando apenas o ID e a Key
             asyncAnalysisService.processGenomeFile(savedReport.getId(), fileKey, filename);
+
+
+            Report report = asyncAnalysisService.startAnalysis(laboratory, file, hospitalName, hospitalUnit);
 
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(savedReport);
 
@@ -74,7 +75,7 @@ public class GenomaController {
         }
     }
 
-    // GET listAll e GET findById permanecem inalterados.
+
 
     @GetMapping
     public ResponseEntity<Page<Report>> listAll(

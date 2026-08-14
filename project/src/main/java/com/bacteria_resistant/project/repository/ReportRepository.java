@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
 
@@ -27,4 +28,23 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
             @Param("endDate") LocalDateTime endDate,
             @Param("minProbability") Double minProbability,
             Pageable pageable);
+
+
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.processingDate >= :startDate")
+    long countSamplesSince(@Param("lab") Laboratory lab, @Param("startDate") LocalDateTime startDate);
+
+
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.processingDate >= :startDate AND r.ampicillinResistance = 1")
+    long countResistantSamplesSince(@Param("lab") Laboratory lab, @Param("startDate") LocalDateTime startDate);
+
+
+    @Query("SELECT COUNT(DISTINCT r.hospitalUnit) FROM Report r WHERE r.laboratory = :lab AND r.processingDate >= :startDate")
+    long countMonitoredUnitsSince(@Param("lab") Laboratory lab, @Param("startDate") LocalDateTime startDate);
+
+
+    @Query("SELECT r.hospitalUnit as unit, COUNT(r.id) as total, SUM(r.ampicillinResistance) as resistantCount " +
+            "FROM Report r WHERE r.laboratory = :lab AND r.processingDate >= :startDate " +
+            "GROUP BY r.hospitalUnit " +
+            "ORDER BY resistantCount DESC")
+    List<Object[]> findClusterPotentials(@Param("lab") Laboratory lab, @Param("startDate") LocalDateTime startDate);
 }

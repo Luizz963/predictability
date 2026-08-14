@@ -1,11 +1,13 @@
 package com.bacteria_resistant.project.service;
 
 import com.bacteria_resistant.project.dto.PredictionResponse;
+import com.bacteria_resistant.project.model.Laboratory;
 import com.bacteria_resistant.project.model.Report;
 import com.bacteria_resistant.project.model.enums.ReportStatus;
 import com.bacteria_resistant.project.repository.ReportRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AsyncAnalysisService {
@@ -40,5 +42,21 @@ public class AsyncAnalysisService {
         }
 
         reportRepository.save(report);
+    }
+
+
+    public Report startAnalysis(Laboratory laboratory, MultipartFile file, String hospitalName, String hospitalUnit) {
+
+
+        Report report = new Report();
+        report.setLaboratory(laboratory);
+        report.setHospitalName(hospitalName);
+        report.setHospitalUnit(hospitalUnit);
+        report.setStatus("PROCESSING");
+
+        report = reportRepository.save(report);
+
+
+        return report;
     }
 }
