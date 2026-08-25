@@ -106,5 +106,29 @@ public class Report {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public String getHospitalName() {
+        return hospitalName;
+    }
+
+    public void setHospitalName(String hospitalName) {
+        this.hospitalName = hospitalName;
+    }
+
+    public String getHospitalUnit() {
+        return hospitalUnit;
+    }
+
+    public void setHospitalUnit(String hospitalUnit) {
+        this.hospitalUnit = hospitalUnit;
+    }
+
+    public String getDetectedGene() {
+        return detectedGene;
+    }
+
+    public void setDetectedGene(String detectedGene) {
+        this.detectedGene = detectedGene;
+    }
 }
 

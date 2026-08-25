@@ -47,4 +47,10 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
             "GROUP BY r.hospitalUnit " +
             "ORDER BY resistantCount DESC")
     List<Object[]> findClusterPotentials(@Param("lab") Laboratory lab, @Param("startDate") LocalDateTime startDate);
+
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.hospitalUnit = :unit AND r.processingDate BETWEEN :start AND :end")
+    long countByLaboratoryAndHospitalUnitInWindow(@Param("lab") Laboratory lab, @Param("unit") String unit, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.hospitalUnit = :unit AND r.ampicillinResistance = 1 AND r.processingDate BETWEEN :start AND :end")
+    long countResistantByLaboratoryAndHospitalUnitInWindow(@Param("lab") Laboratory lab, @Param("unit") String unit, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

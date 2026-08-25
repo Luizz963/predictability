@@ -1,6 +1,7 @@
 package com.bacteria_resistant.project.service;
 
-import com.bacteria_resistant.project.dto.PredictionResponse;
+import com.bacteria_resistant.project.dto.response.PredictionResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +17,10 @@ import java.io.InputStream;
 @Service
 public class PythonApiClientService {
 
-    private final String PYTHON_API_URL = "http://localhost:8023/predict";
+    // Extrai a rota dinamicamente da infraestrutura (http://python-ai:8023/predict)
+    @Value("${ai.engine.url}")
+    private String pythonApiUrl;
+
     private final StorageService storageService;
 
     public PythonApiClientService(StorageService storageService) {
@@ -28,12 +32,12 @@ public class PythonApiClientService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
+        headers.set("X-Internal-Key", "troque-esta-chave-em-producao");
+
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 
-        // Baixa o arquivo do S3 como Stream
         InputStream s3InputStream = storageService.downloadFile(fileKey);
 
-        // InputStreamResource consome a stream sob demanda durante o envio HTTP
         body.add("file", new InputStreamResource(s3InputStream) {
             @Override
             public String getFilename() {
@@ -42,14 +46,15 @@ public class PythonApiClientService {
 
             @Override
             public long contentLength() {
-                return -1; // Força o envio em chunks (Chunked Transfer-Encoding)
+                return -1;
             }
         });
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
+        // Dispara o POST usando a variável injetada
         ResponseEntity<PredictionResponse> response = restTemplate.postForEntity(
-                PYTHON_API_URL,
+                pythonApiUrl,
                 requestEntity,
                 PredictionResponse.class
         );

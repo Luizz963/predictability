@@ -23,18 +23,15 @@ public class DashboardService {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
         LocalDateTime twoDaysAgo = LocalDateTime.now().minusDays(2);
 
-
         long totalSamples = reportRepository.countSamplesSince(laboratory, sevenDaysAgo);
         long resistantSamples = reportRepository.countResistantSamplesSince(laboratory, sevenDaysAgo);
         long monitoredUnits = reportRepository.countMonitoredUnitsSince(laboratory, sevenDaysAgo);
-
 
         String prevalence = "0%";
         if (totalSamples > 0) {
             long percentage = Math.round(((double) resistantSamples / totalSamples) * 100);
             prevalence = percentage + "%";
         }
-
 
         List<Object[]> clusterData = reportRepository.findClusterPotentials(laboratory, twoDaysAgo);
         long activeClusters = 0;
@@ -43,8 +40,9 @@ public class DashboardService {
         for (Object[] row : clusterData) {
             String unit = (String) row[0];
             long totalInUnit = ((Number) row[1]).longValue();
-            long resistantInUnit = ((Number) row[2]).longValue();
 
+            // Proteção contra row[2] nulo para evitar erro no servidor
+            long resistantInUnit = row[2] != null ? ((Number) row[2]).longValue() : 0L;
 
             if (totalInUnit >= 3 && ((double) resistantInUnit / totalInUnit) >= 0.5) {
                 activeClusters++;

@@ -1,4 +1,4 @@
-package com.bacteria_resistant.project.dto;
+package com.bacteria_resistant.project.dto.response;
 
 import java.time.LocalDateTime;
 

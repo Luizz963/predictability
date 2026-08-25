@@ -1,43 +1,31 @@
 package com.bacteria_resistant.project.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @Service
 public class StorageService {
 
-    private final S3Client s3Client;
-
-    @Value("${aws.s3.bucket-name}")
-    private String bucketName;
-
-    public StorageService(S3Client s3Client) {
-        this.s3Client = s3Client;
-    }
+    private final Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
 
     public void uploadFile(String fileKey, InputStream inputStream, long contentLength, String contentType) {
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileKey)
-                .contentType(contentType)
-                .build();
-
-        s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, contentLength));
+        try {
+            Files.copy(inputStream, tempDir.resolve(fileKey), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException("Falha ao salvar arquivo localmente no mock do S3", e);
+        }
     }
 
     public InputStream downloadFile(String fileKey) {
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileKey)
-                .build();
-
-
-        return s3Client.getObject(getObjectRequest);
+        try {
+            return Files.newInputStream(tempDir.resolve(fileKey));
+        } catch (IOException e) {
+            throw new RuntimeException("Falha ao ler arquivo localmente no mock do S3", e);
+        }
     }
 }
