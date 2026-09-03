@@ -37,18 +37,17 @@ public class GenomeIngestionService {
         }
 
         try {
-            String fileKey = UUID.randomUUID().toString() + "_" + filename;
 
+            String safeHospitalName = hospitalName.replaceAll("\\s+","_").toLowerCase();
+            String fileKey = laboratory.getId() + "/" + safeHospitalName + "/" + UUID.randomUUID().toString() + "_" + filename;
 
             storageService.uploadFile(fileKey, file.getInputStream(), file.getSize(), file.getContentType());
-
 
             Report report = new Report(filename, fileKey, laboratory);
             report.setHospitalName(hospitalName);
             report.setHospitalUnit(hospitalUnit);
             report.setStatus(ReportStatus.PROCESSING);
             Report savedReport = reportRepository.saveAndFlush(report);
-
 
             asyncAnalysisService.processGenomeFile(savedReport.getId(), fileKey, filename);
 

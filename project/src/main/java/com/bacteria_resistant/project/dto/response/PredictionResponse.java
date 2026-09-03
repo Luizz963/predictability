@@ -12,7 +12,16 @@ public record PredictionResponse(
         @JsonProperty("mlProbability")
         double probability,
 
+        @JsonProperty("geneDetected")
+        boolean geneDetected,
+
         @JsonProperty("detectedGene")
-        String detectedGene
+        String detectedGene,
+
+        @JsonProperty("resistanceClass")
+        String resistanceClass,
+
+        @JsonProperty("confidenceLevel")
+        String confidenceLevel
 ) {
 }

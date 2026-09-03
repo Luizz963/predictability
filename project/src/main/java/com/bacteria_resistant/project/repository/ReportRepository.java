@@ -53,4 +53,21 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
     @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.hospitalUnit = :unit AND r.ampicillinResistance = 1 AND r.processingDate BETWEEN :start AND :end")
     long countResistantByLaboratoryAndHospitalUnitInWindow(@Param("lab") Laboratory lab, @Param("unit") String unit, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab " +
+            "AND r.hospitalUnit = :unit " +
+            "AND r.processingDate BETWEEN :start AND :end " +
+            "AND r.ampicillinResistance = 1 " +
+            "AND r.probability >= :minProb " +
+            "AND r.detectedGene IS NOT NULL " +
+            "AND r.detectedGene != 'não detectado'")
+    long countHighConfidenceInWindow(
+            @Param("lab") Laboratory lab,
+            @Param("unit") String unit,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("minProb") Double minProb);
+
+    @Query("SELECT r FROM Report r WHERE r.id = :id AND r.laboratory = :lab")
+    java.util.Optional<Report> findByIdAndLaboratory(@Param("id") Long id, @Param("lab") Laboratory lab);
 }

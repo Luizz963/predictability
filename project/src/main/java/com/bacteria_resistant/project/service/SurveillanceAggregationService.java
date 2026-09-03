@@ -14,6 +14,11 @@ public class SurveillanceAggregationService {
     private final ReportRepository reportRepository;
     private final SurveillanceAlertRepository alertRepository;
 
+    // Constantes da regra de negócio da CCIH
+    private static final int SURTO_WINDOW_DAYS = 7;
+    private static final int MIN_SAMPLES_FOR_CLUSTER = 3;
+    private static final double CONFIDENCE_THRESHOLD = 0.85;
+
     public SurveillanceAggregationService(ReportRepository reportRepository, SurveillanceAlertRepository alertRepository) {
         this.reportRepository = reportRepository;
         this.alertRepository = alertRepository;
@@ -22,28 +27,35 @@ public class SurveillanceAggregationService {
     @Transactional
     public void aggregateAndPersist(Laboratory lab, String hospitalName, String hospitalUnit) {
         LocalDateTime end = LocalDateTime.now();
-        LocalDateTime start = end.minusDays(7);
+        LocalDateTime start = end.minusDays(SURTO_WINDOW_DAYS);
+
 
         long totalSamples = reportRepository.countByLaboratoryAndHospitalUnitInWindow(lab, hospitalUnit, start, end);
-        long resistantSamples = reportRepository.countResistantByLaboratoryAndHospitalUnitInWindow(lab, hospitalUnit, start, end);
-
         if (totalSamples == 0) return;
 
-        double prevalence = (double) resistantSamples / totalSamples;
-        boolean triggered = (totalSamples >= 3 && prevalence >= 0.50);
 
-        SurveillanceAlert alert = new SurveillanceAlert();
-        alert.setLaboratory(lab);
-        alert.setHospitalName(hospitalName);
-        alert.setHospitalUnit(hospitalUnit);
-        alert.setWindowStart(start);
-        alert.setWindowEnd(end);
-        alert.setSampleCount((int) totalSamples);
-        alert.setHighConfidenceCount((int) resistantSamples);
-        alert.setPrevalenceRate(prevalence);
-        alert.setAlertTriggered(triggered);
-        alert.setGeneratedAt(end);
+        long highConfidenceCount = reportRepository.countHighConfidenceInWindow(lab, hospitalUnit, start, end, CONFIDENCE_THRESHOLD);
 
-        alertRepository.save(alert);
+        double prevalence = (double) highConfidenceCount / totalSamples;
+
+
+        boolean triggered = (highConfidenceCount >= MIN_SAMPLES_FOR_CLUSTER);
+
+
+        if (triggered) {
+            SurveillanceAlert alert = new SurveillanceAlert();
+            alert.setLaboratory(lab);
+            alert.setHospitalName(hospitalName);
+            alert.setHospitalUnit(hospitalUnit);
+            alert.setWindowStart(start);
+            alert.setWindowEnd(end);
+            alert.setSampleCount((int) totalSamples);
+            alert.setHighConfidenceCount((int) highConfidenceCount);
+            alert.setPrevalenceRate(prevalence);
+            alert.setAlertTriggered(true);
+            alert.setGeneratedAt(end);
+
+            alertRepository.save(alert);
+        }
     }
 }

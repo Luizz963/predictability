@@ -3,10 +3,16 @@ package com.bacteria_resistant.project.model;
 import com.bacteria_resistant.project.model.enums.ReportStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tb_reports")
+@FilterDef(name = "tenantFilter", parameters = {@ParamDef(name = "tenantId", type = Long.class)})
+@Filter(name = "tenantFilter", condition = "laboratory_id = :tenantId")
 public class Report {
 
     @Id
@@ -38,6 +44,13 @@ public class Report {
 
     @Column(name = "detected_gene")
     private String detectedGene;
+
+
+    @Column(name = "phenotype_confirmed")
+    private Boolean phenotypeConfirmed = false;
+
+    @Column(name = "actual_resistance")
+    private Integer actualResistance;
 
     public Report() {
     }
@@ -129,6 +142,22 @@ public class Report {
 
     public void setDetectedGene(String detectedGene) {
         this.detectedGene = detectedGene;
+    }
+
+    public Integer getActualResistance() {
+        return actualResistance;
+    }
+
+    public void setActualResistance(Integer actualResistance) {
+        this.actualResistance = actualResistance;
+    }
+
+    public Boolean getPhenotypeConfirmed() {
+        return phenotypeConfirmed;
+    }
+
+    public void setPhenotypeConfirmed(Boolean phenotypeConfirmed) {
+        this.phenotypeConfirmed = phenotypeConfirmed;
     }
 }
 

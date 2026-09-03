@@ -40,15 +40,13 @@ public class DashboardService {
         for (Object[] row : clusterData) {
             String unit = (String) row[0];
             long totalInUnit = ((Number) row[1]).longValue();
-
-            // Proteção contra row[2] nulo para evitar erro no servidor
             long resistantInUnit = row[2] != null ? ((Number) row[2]).longValue() : 0L;
 
             if (totalInUnit >= 3 && ((double) resistantInUnit / totalInUnit) >= 0.5) {
                 activeClusters++;
                 if (alert == null) {
-                    String message = String.format("%d de %d amostras dos últimos 2 dias compartilham o mesmo determinante de resistência.",
-                            resistantInUnit, totalInUnit);
+                    String message = String.format("ALERTA CCIH: %d isolados com perfil genético de resistência identificados no setor %s nas últimas 48h. Risco de transmissão cruzada ativa.",
+                            resistantInUnit, unit.toUpperCase());
                     alert = new ClusterAlertDTO(unit, message);
                 }
             }

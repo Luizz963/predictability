@@ -1,33 +1,38 @@
-version: '3.8'
-
 services:
   mysql-db:
     image: mysql:8.0
     container_name: bacteria-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: KwnXh8JoSmle?HFv  # Preencha uma senha forte para o administrador
-      MYSQL_DATABASE: bacteria_db
-      MYSQL_USER: agario                  # O mesmo configurado no application.properties
-      MYSQL_PASSWORD: gwM?iQp0SCbh     # A mesma configurada no application.properties
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3308:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - bacresist-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   minio-storage:
     image: minio/minio
     container_name: bacteria-minio
-    restart: always
     command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: piroca06%
     ports:
-      - "9000:9000" # Porta da API (consumida pelo Java)
-      - "9001:9001" # Porta do Console (interface web)
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
     volumes:
       - minio_data:/data
+    networks:
+      - bacresist-network
 
   minio-create-bucket:
     image: minio/mc
@@ -37,11 +42,55 @@ services:
     entrypoint: >
       /bin/sh -c "
       sleep 5;
-      /usr/bin/mc config host add myminio http://minio-storage:9000 minioadmin piroca06%;
-      /usr/bin/mc mb myminio/genomes --ignore-existing;
-      /usr/bin/mc anonymous set private myminio/genomes;
+      /usr/bin/mc config host add myminio ${S3_ENDPOINT} ${S3_ACCESS_KEY} ${S3_SECRET_KEY};
+      /usr/bin/mc mb myminio/${S3_BUCKET} --ignore-existing;
+      /usr/bin/mc anonymous set private myminio/${S3_BUCKET};
       exit 0;
       "
+    networks:
+      - bacresist-network
+
+  python-ai:
+    build: C:\IA\bacresist-inference
+    environment:
+      - BACRESIST_INTERNAL_KEY=${BACRESIST_INTERNAL_KEY}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+      - S3_BUCKET=${S3_BUCKET}
+    container_name: bacresist-ia
+    ports:
+      - "8023:8023"
+    networks:
+      - bacresist-network
+
+  bacresist-java:
+    build: .
+    container_name: bacresist-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://bacteria-mysql:3306/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_FLYWAY_URL=jdbc:mysql://bacteria-mysql:3306/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false
+      - AI_ENGINE_URL=http://python-ai:8023/predict
+      - AWS_S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - AWS_S3_SECRET_KEY=${S3_SECRET_KEY}
+      - AWS_S3_ENDPOINT=${S3_ENDPOINT}
+      - AWS_REGION=us-east-1
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      python-ai:
+        condition: service_started
+    networks:
+      - bacresist-network
+
+networks:
+  bacresist-network:
+    driver: bridge
 
 volumes:
   mysql_data:

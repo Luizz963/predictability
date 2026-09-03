@@ -2,10 +2,16 @@ package com.bacteria_resistant.project.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tb_surveillance_alerts")
+@FilterDef(name = "tenantFilter", parameters = {@ParamDef(name = "tenantId", type = Long.class)})
+@Filter(name = "tenantFilter", condition = "laboratory_id = :tenantId")
 public class SurveillanceAlert {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
