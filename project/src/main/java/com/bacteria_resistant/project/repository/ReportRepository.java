@@ -19,7 +19,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
     @Query("SELECT r FROM Report r WHERE r.laboratory = :laboratory " +
             "AND r.processingDate BETWEEN :startDate AND :endDate " +
-            "AND r.ampicillinResistance = 1 " +
+            "AND r.resistanceSignal = 1 " +
             "AND r.probability >= :minProbability " +
             "ORDER BY r.processingDate DESC")
     Page<Report> findOutbreakPatterns(
@@ -34,7 +34,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     long countSamplesSince(@Param("lab") Laboratory lab, @Param("startDate") LocalDateTime startDate);
 
 
-    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.processingDate >= :startDate AND r.ampicillinResistance = 1")
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.processingDate >= :startDate AND r.resistanceSignal = 1")
     long countResistantSamplesSince(@Param("lab") Laboratory lab, @Param("startDate") LocalDateTime startDate);
 
 
@@ -42,7 +42,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     long countMonitoredUnitsSince(@Param("lab") Laboratory lab, @Param("startDate") LocalDateTime startDate);
 
 
-    @Query("SELECT r.hospitalUnit as unit, COUNT(r.id) as total, SUM(r.ampicillinResistance) as resistantCount " +
+    @Query("SELECT r.hospitalUnit as unit, COUNT(r.id) as total, SUM(r.resistanceSignal) as resistantCount " +
             "FROM Report r WHERE r.laboratory = :lab AND r.processingDate >= :startDate " +
             "GROUP BY r.hospitalUnit " +
             "ORDER BY resistantCount DESC")
@@ -51,13 +51,13 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.hospitalUnit = :unit AND r.processingDate BETWEEN :start AND :end")
     long countByLaboratoryAndHospitalUnitInWindow(@Param("lab") Laboratory lab, @Param("unit") String unit, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.hospitalUnit = :unit AND r.ampicillinResistance = 1 AND r.processingDate BETWEEN :start AND :end")
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab AND r.hospitalUnit = :unit AND r.resistanceSignal = 1 AND r.processingDate BETWEEN :start AND :end")
     long countResistantByLaboratoryAndHospitalUnitInWindow(@Param("lab") Laboratory lab, @Param("unit") String unit, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("SELECT COUNT(r) FROM Report r WHERE r.laboratory = :lab " +
             "AND r.hospitalUnit = :unit " +
             "AND r.processingDate BETWEEN :start AND :end " +
-            "AND r.ampicillinResistance = 1 " +
+            "AND r.resistanceSignal = 1 " +
             "AND r.probability >= :minProb " +
             "AND r.detectedGene IS NOT NULL " +
             "AND r.detectedGene != 'não detectado'")

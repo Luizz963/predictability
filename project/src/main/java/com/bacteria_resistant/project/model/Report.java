@@ -24,7 +24,7 @@ public class Report {
     @Enumerated(EnumType.STRING)
     private ReportStatus status;
 
-    private Integer ampicillinResistance;
+    private Integer resistanceSignal;
     private Double probability;
     private LocalDateTime processingDate;
 
@@ -51,6 +51,9 @@ public class Report {
 
     @Column(name = "actual_resistance")
     private Integer actualResistance;
+
+    @Column(name = "confidence_level")
+    private String confidenceLevel;
 
     public Report() {
     }
@@ -88,12 +91,12 @@ public class Report {
         this.probability = probability;
     }
 
-    public Integer getAmpicillinResistance() {
-        return ampicillinResistance;
+    public Integer getResistanceSignal() {
+        return resistanceSignal;
     }
 
-    public void setAmpicillinResistance(Integer ampicillinResistance) {
-        this.ampicillinResistance = ampicillinResistance;
+    public void setResistanceSignal(Integer resistanceSignal) {
+        this.resistanceSignal = resistanceSignal;
     }
 
     public ReportStatus getStatus() {
@@ -158,6 +161,14 @@ public class Report {
 
     public void setPhenotypeConfirmed(Boolean phenotypeConfirmed) {
         this.phenotypeConfirmed = phenotypeConfirmed;
+    }
+
+    public String getConfidenceLevel() {
+        return confidenceLevel;
+    }
+
+    public void setConfidenceLevel(String confidenceLevel) {
+        this.confidenceLevel = confidenceLevel;
     }
 }
 

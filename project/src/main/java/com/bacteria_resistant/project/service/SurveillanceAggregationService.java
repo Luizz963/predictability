@@ -14,7 +14,7 @@ public class SurveillanceAggregationService {
     private final ReportRepository reportRepository;
     private final SurveillanceAlertRepository alertRepository;
 
-    // Constantes da regra de negócio da CCIH
+
     private static final int SURTO_WINDOW_DAYS = 7;
     private static final int MIN_SAMPLES_FOR_CLUSTER = 3;
     private static final double CONFIDENCE_THRESHOLD = 0.85;
@@ -39,7 +39,7 @@ public class SurveillanceAggregationService {
         double prevalence = (double) highConfidenceCount / totalSamples;
 
 
-        boolean triggered = (highConfidenceCount >= MIN_SAMPLES_FOR_CLUSTER);
+        boolean triggered = (highConfidenceCount >= MIN_SAMPLES_FOR_CLUSTER) && (prevalence >= 0.5);
 
 
         if (triggered) {

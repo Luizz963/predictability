@@ -75,6 +75,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_FLYWAY_URL=jdbc:mysql://bacteria-mysql:3306/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false
       - AI_ENGINE_URL=http://python-ai:8023/predict
+      - BACRESIST_INTERNAL_KEY=${BACRESIST_INTERNAL_KEY}
       - AWS_S3_ACCESS_KEY=${S3_ACCESS_KEY}
       - AWS_S3_SECRET_KEY=${S3_SECRET_KEY}
       - AWS_S3_ENDPOINT=${S3_ENDPOINT}

@@ -6,10 +6,13 @@ import com.bacteria_resistant.project.model.Report;
 import com.bacteria_resistant.project.model.enums.ReportStatus;
 import com.bacteria_resistant.project.repository.ReportRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
@@ -19,6 +22,9 @@ public class GenomeIngestionService {
     private final ReportRepository reportRepository;
     private final AsyncAnalysisService asyncAnalysisService;
 
+
+    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir") + "/genomas/";
+
     public GenomeIngestionService(StorageService storageService,
                                   ReportRepository reportRepository,
                                   AsyncAnalysisService asyncAnalysisService) {
@@ -27,21 +33,19 @@ public class GenomeIngestionService {
         this.asyncAnalysisService = asyncAnalysisService;
     }
 
-
     public Report ingestAndStartAnalysis(Laboratory laboratory, MultipartFile file, String hospitalName, String hospitalUnit) {
         String filename = file.getOriginalFilename();
-
 
         if (filename == null || (!filename.endsWith(".fna") && !filename.endsWith(".fasta"))) {
             throw new InvalidFileException("Unsupported format. Please upload only .fna or .fasta files.");
         }
 
         try {
-
             String safeHospitalName = hospitalName.replaceAll("\\s+","_").toLowerCase();
-            String fileKey = laboratory.getId() + "/" + safeHospitalName + "/" + UUID.randomUUID().toString() + "_" + filename;
-
+            String uuid = UUID.randomUUID().toString();
+            String fileKey = laboratory.getId() + "/" + safeHospitalName + "/" + uuid + "_" + filename;
             storageService.uploadFile(fileKey, file.getInputStream(), file.getSize(), file.getContentType());
+
 
             Report report = new Report(filename, fileKey, laboratory);
             report.setHospitalName(hospitalName);
@@ -49,7 +53,7 @@ public class GenomeIngestionService {
             report.setStatus(ReportStatus.PROCESSING);
             Report savedReport = reportRepository.saveAndFlush(report);
 
-            asyncAnalysisService.processGenomeFile(savedReport.getId(), fileKey, filename);
+            asyncAnalysisService.processGenomeFile(savedReport.getId(), fileKey);
 
             return savedReport;
 

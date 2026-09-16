@@ -1,0 +1,1 @@
+ALTER TABLE tb_reports ADD COLUMN confidence_level VARCHAR(255);

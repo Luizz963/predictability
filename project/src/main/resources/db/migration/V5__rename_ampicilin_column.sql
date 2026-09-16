@@ -1,0 +1,1 @@
+ALTER TABLE tb_reports CHANGE COLUMN ampicillin_resistance resistance_signal INT;

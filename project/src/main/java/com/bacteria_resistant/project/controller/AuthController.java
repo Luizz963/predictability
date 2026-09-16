@@ -1,7 +1,7 @@
 package com.bacteria_resistant.project.controller;
 
 import com.bacteria_resistant.project.dto.AuthenticationDTO;
-
+import com.bacteria_resistant.project.dto.RegisterDTO;
 import com.bacteria_resistant.project.dto.response.LoginResponseDTO;
 import com.bacteria_resistant.project.model.Laboratory;
 import com.bacteria_resistant.project.repository.LaboratoryRepository;
@@ -12,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -34,18 +31,18 @@ public class AuthController {
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid AuthenticationDTO data) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.taxId(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
-
         var token = tokenService.generateToken((Laboratory) auth.getPrincipal());
-
         return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody @Valid AuthenticationDTO data) {
-        if (this.repository.findByTaxId(data.taxId()) != null) return ResponseEntity.badRequest().build();
+    public ResponseEntity<Void> register(@RequestBody @Valid RegisterDTO data) {
+        if (this.repository.findByTaxId(data.taxId()) != null) {
+            return ResponseEntity.badRequest().build();
+        }
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
-        Laboratory newLaboratory = new Laboratory(data.taxId(), encryptedPassword);
+        Laboratory newLaboratory = new Laboratory(data.taxId(), encryptedPassword, data.name());
 
         this.repository.save(newLaboratory);
 

@@ -22,13 +22,20 @@ public class Laboratory implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+
+    @Column(nullable = false)
+    private String name;
+
     public Laboratory() {}
 
-    public Laboratory(String taxId, String password) {
+    // Construtor atualizado para incluir o nome
+    public Laboratory(String taxId, String password, String name) {
         this.taxId = taxId;
         this.password = password;
+        this.name = name;
     }
 
+    // Métodos do UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
@@ -56,6 +63,8 @@ public class Laboratory implements UserDetails {
     @Override
     public boolean isEnabled() { return true; }
 
+    // Getters
     public Long getId() { return id; }
     public String getTaxId() { return taxId; }
+    public String getName() { return name; }
 }
