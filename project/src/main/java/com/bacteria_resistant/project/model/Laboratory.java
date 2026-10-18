@@ -19,37 +19,40 @@ public class Laboratory implements UserDetails {
     @Column(unique = true, nullable = false)
     private String taxId;
 
+    @Column(unique = true, nullable = false)
+    private String email;
+
     @Column(nullable = false)
     private String password;
-
 
     @Column(nullable = false)
     private String name;
 
     public Laboratory() {}
 
-    // Construtor atualizado para incluir o nome
-    public Laboratory(String taxId, String password, String name) {
+    public Laboratory(String taxId, String email, String password, String name) {
         this.taxId = taxId;
+        this.email = email;
         this.password = password;
         this.name = name;
     }
 
-    // Métodos do UserDetails
+    // Getters e Setters do email e password
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public void setPassword(String password) { this.password = password; }
+    public void setName(String name) { this.name = name; }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
-    public String getPassword() {
-        return this.password;
-    }
+    public String getPassword() { return this.password; }
 
     @Override
-    public String getUsername() {
-        return this.taxId;
-    }
+    public String getUsername() { return this.taxId; }
 
     @Override
     public boolean isAccountNonExpired() { return true; }
@@ -63,7 +66,6 @@ public class Laboratory implements UserDetails {
     @Override
     public boolean isEnabled() { return true; }
 
-    // Getters
     public Long getId() { return id; }
     public String getTaxId() { return taxId; }
     public String getName() { return name; }

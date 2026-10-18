@@ -3,6 +3,7 @@ package com.bacteria_resistant.project.repository;
 
 import com.bacteria_resistant.project.model.Laboratory;
 import com.bacteria_resistant.project.model.Report;
+import com.bacteria_resistant.project.model.enums.ReportStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -70,4 +71,12 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
     @Query("SELECT r FROM Report r WHERE r.id = :id AND r.laboratory = :lab")
     java.util.Optional<Report> findByIdAndLaboratory(@Param("id") Long id, @Param("lab") Laboratory lab);
+
+
+    List<Report> findByLaboratoryAndStatusAndPhenotypeConfirmedFalseOrderByProcessingDateDesc(
+            Laboratory laboratory, ReportStatus status);
+
+
+    List<Report> findByLaboratoryAndProcessingDateAfterOrderByProcessingDateDesc(
+            Laboratory laboratory, LocalDateTime since);
 }

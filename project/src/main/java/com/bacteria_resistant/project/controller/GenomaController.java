@@ -3,7 +3,7 @@ package com.bacteria_resistant.project.controller;
 import com.bacteria_resistant.project.dto.response.SurveillanceAlertDTO;
 import com.bacteria_resistant.project.model.Laboratory;
 import com.bacteria_resistant.project.repository.SurveillanceAlertRepository;
-import com.bacteria_resistant.project.service.GenomeIngestionService;
+import com.bacteria_resistant.project.service.genome.GenomeIngestionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/genomes")
@@ -36,10 +35,11 @@ public class GenomaController {
             @AuthenticationPrincipal Laboratory laboratory,
             @RequestParam("file") List<MultipartFile> files,
             @RequestParam("hospitalName") String hospitalName,
-            @RequestParam("hospitalUnit") String hospitalUnit) {
+            @RequestParam("hospitalUnit") String hospitalUnit,
+            @RequestParam(value = "organism", required = false) String organism) {
 
         for (MultipartFile file : files) {
-            ingestionService.ingestAndStartAnalysis(laboratory, file, hospitalName, hospitalUnit);
+            ingestionService.ingestAndStartAnalysis(laboratory, file, hospitalName, hospitalUnit, organism);
         }
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }

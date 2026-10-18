@@ -1,0 +1,1 @@
+ALTER TABLE tb_reports ADD COLUMN organism VARCHAR(255);

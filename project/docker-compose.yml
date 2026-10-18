@@ -51,7 +51,7 @@ services:
       - bacresist-network
 
   python-ai:
-    build: C:\IA\bacresist-inference
+    build: ${PYTHON_AI_BUILD_CONTEXT}
     environment:
       - BACRESIST_INTERNAL_KEY=${BACRESIST_INTERNAL_KEY}
       - S3_ENDPOINT=${S3_ENDPOINT}

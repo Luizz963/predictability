@@ -31,4 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Secrets / local config ###
 .env
+.env.*
+!.env.example
+application-local.properties
+*.pem
+*.p12
+*.jks
+credentials.json

@@ -45,6 +45,8 @@ public class Report {
     @Column(name = "detected_gene")
     private String detectedGene;
 
+    @Column(name = "organism")
+    private String organism;
 
     @Column(name = "phenotype_confirmed")
     private Boolean phenotypeConfirmed = false;
@@ -170,5 +172,10 @@ public class Report {
     public void setConfidenceLevel(String confidenceLevel) {
         this.confidenceLevel = confidenceLevel;
     }
+
+    public String getOrganism() { return organism; }
+
+
+    public void setOrganism(String organism) { this.organism = organism; }
 }
 
